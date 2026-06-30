@@ -91,6 +91,9 @@ jobs:
         run: |
           npx tsx scripts/seed.ts --limit="$LIMIT" --interval-hours="$INTERVAL_HOURS" --delay=2000
 
+          new_posts=$(git status --porcelain -- content/editorial \
+            | grep -E '\.mdx$' | grep -vE '^.D' | wc -l | tr -d ' ' || true)
+
           # Guard against the destructive purge + nothing-generated case: if we
           # deleted the existing catalog but wrote no replacement (e.g. a missing
           # BRAVE_API_KEY makes every topic skip), fail now so the commit step
@@ -98,13 +101,14 @@ jobs:
           # post files (porcelain status not starting with 'D'), excluding the
           # purge's own deletions. `|| true` keeps the count safe under pipefail.
           if [ "$PURGED" = "true" ]; then
-            new_posts=$(git status --porcelain -- content/editorial \
-              | grep -E '\.mdx$' | grep -vE '^.D' | wc -l | tr -d ' ' || true)
             if [ "${new_posts:-0}" -eq 0 ]; then
               echo "::error::purge was requested but the seed produced 0 new posts — refusing to commit a wiped catalog. Check that GEMINI_API_KEY and BRAVE_API_KEY are set." >&2
               exit 1
             fi
             echo "Purge run wrote ${new_posts} new post(s); proceeding to commit."
+          elif [ "${LIMIT:-0}" != "0" ] && [ "${new_posts:-0}" -eq 0 ]; then
+            echo "::error::seed limit=${LIMIT} but produced 0 new posts — check GEMINI_API_KEY and research sources." >&2
+            exit 1
           fi
 
       - name: Commit and push

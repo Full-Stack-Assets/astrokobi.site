@@ -28,6 +28,32 @@ async function braveWebSearch(query: string): Promise<BraveWebResult[]> {
   return json.web?.results ?? [];
 }
 
+/** Keyless fallback for seed/backfill when BRAVE_API_KEY is unset. */
+async function wikipediaWebSearch(query: string): Promise<BraveWebResult[]> {
+  try {
+    const url = new URL('https://en.wikipedia.org/w/api.php');
+    url.searchParams.set('action', 'query');
+    url.searchParams.set('list', 'search');
+    url.searchParams.set('srsearch', query);
+    url.searchParams.set('srlimit', '5');
+    url.searchParams.set('format', 'json');
+    url.searchParams.set('origin', '*');
+
+    const res = await fetch(url, { headers: { 'user-agent': SCRAPER_UA } });
+    if (!res.ok) return [];
+    const json = (await res.json()) as {
+      query?: { search?: { title: string; snippet: string }[] };
+    };
+    return (json.query?.search ?? []).map((hit) => ({
+      title: hit.title,
+      description: hit.snippet.replace(/<[^>]+>/g, ''),
+      url: `https://en.wikipedia.org/wiki/${encodeURIComponent(hit.title.replace(/ /g, '_'))}`,
+    }));
+  } catch {
+    return [];
+  }
+}
+
 async function scrapeArticle(url: string): Promise<{ title: string; content: string } | null> {
   try {
     const controller = new AbortController();
@@ -89,7 +115,9 @@ export async function research(
   // Build a search query from the winner's title, stripping common filler
   const query = winner.title.replace(/[^\w\s]/g, ' ').split(/\s+/).slice(0, 10).join(' ');
 
-  const searchResults = await braveWebSearch(query);
+  const braveResults = await braveWebSearch(query);
+  const searchResults =
+    braveResults.length > 0 ? braveResults : await wikipediaWebSearch(query);
 
   // Scrape top 3 unique domains, excluding the winner's own URL
   const winnerHost = (() => {
