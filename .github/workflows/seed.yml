@@ -3,7 +3,8 @@ name: Seed Backfill
 # Manually-triggered backfill. Generates posts from the curated evergreen topic
 # list (scripts/seed-topics.ts) using the same write path as the hourly job, then
 # commits them. Runs in CI so it uses the repo's existing Actions secrets — the
-# rotated keys never leave GitHub. Trigger it from the Actions tab → "Run workflow".
+# rotated keys never leave GitHub. Trigger it from the Actions tab → "Run workflow",
+# or push an update to `.github/seed-trigger.json` on main (for automation).
 on:
   workflow_dispatch:
     inputs:
@@ -20,6 +21,10 @@ on:
         type: boolean
         required: false
         default: false
+  push:
+    branches: [main]
+    paths:
+      - '.github/seed-trigger.json'
 
 # Don't overlap with another seed run or let two writers race to commit.
 concurrency:
@@ -44,9 +49,25 @@ jobs:
 
       - run: npm ci
 
+      - name: Resolve seed parameters
+        id: seed_params
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            LIMIT=$(jq -r '.limit // "30"' .github/seed-trigger.json)
+            INTERVAL_HOURS=$(jq -r '.interval_hours // "24"' .github/seed-trigger.json)
+            PURGED=$(jq -r '.purge // false' .github/seed-trigger.json)
+          else
+            LIMIT="${{ inputs.limit }}"
+            INTERVAL_HOURS="${{ inputs.interval_hours }}"
+            PURGED="${{ inputs.purge }}"
+          fi
+          echo "limit=$LIMIT" >> "$GITHUB_OUTPUT"
+          echo "interval_hours=$INTERVAL_HOURS" >> "$GITHUB_OUTPUT"
+          echo "purged=$PURGED" >> "$GITHUB_OUTPUT"
+
       # Opt-in only. Defaults to false, so a normal run never deletes anything.
       - name: Purge inherited posts (optional)
-        if: ${{ inputs.purge }}
+        if: ${{ steps.seed_params.outputs.purged == 'true' }}
         run: |
           find content/editorial -name '*.mdx' ! -name 'welcome-to-the-dispatch.mdx' -delete
           echo '{ "topics": [] }' > content/.topic-log.json
@@ -64,9 +85,9 @@ jobs:
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           # Pass inputs via env (never interpolate ${{ }} into the shell) so a
           # crafted input value can't inject commands into this run step.
-          LIMIT: ${{ inputs.limit }}
-          INTERVAL_HOURS: ${{ inputs.interval_hours }}
-          PURGED: ${{ inputs.purge }}
+          LIMIT: ${{ steps.seed_params.outputs.limit }}
+          INTERVAL_HOURS: ${{ steps.seed_params.outputs.interval_hours }}
+          PURGED: ${{ steps.seed_params.outputs.purged }}
         run: |
           npx tsx scripts/seed.ts --limit="$LIMIT" --interval-hours="$INTERVAL_HOURS" --delay=2000
 
