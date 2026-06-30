@@ -128,10 +128,10 @@ export async function runPipeline(opts: PipelineOptions = {}): Promise<PipelineR
       timings,
     };
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
     if (err instanceof LlmAuthenticationError) {
       return { ok: false, skipped: 'LLM authentication failed; check the configured LLM API key', timings };
     }
+    const message = err instanceof Error ? err.message : String(err);
     return {
       ok: false,
       error: message,
@@ -213,10 +213,10 @@ export async function generateForTopic(
 
     return { ok: true, slug: post.slug, path, winner: { title, url: '', score: 1 }, timings };
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
     if (err instanceof LlmAuthenticationError) {
       return { ok: false, skipped: 'LLM authentication failed; check the configured LLM API key', timings };
     }
+    const message = err instanceof Error ? err.message : String(err);
     return { ok: false, error: message, timings };
   }
 }

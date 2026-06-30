@@ -53,7 +53,7 @@ const LLM_AUTH_MESSAGE_PATTERNS = [
 
 function isLlmAuthenticationError(err: unknown): boolean {
   // Require both an auth-like HTTP status and provider auth wording so ordinary
-  // 400 validation errors still fail loudly instead of being treated as skips.
+  // 400 validation errors still fail loudly while auth rejections become skips.
   return (
     err instanceof LlmError &&
     err.status !== undefined &&
