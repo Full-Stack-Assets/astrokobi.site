@@ -5,7 +5,7 @@ import { fetchBraveNews } from '../sources/bravenews';
 import { fetchGoogleTrends } from '../sources/googletrends';
 import { score, dedupe, pickWinner, signature } from './score';
 import { research } from './research';
-import { generate } from './generate';
+import { generate, LlmAuthenticationError } from './generate';
 import { pickImage } from './image';
 import { serialize } from './serialize';
 import { loadTopicLog, saveTopicLog, commitPost } from './github';
@@ -128,9 +128,13 @@ export async function runPipeline(opts: PipelineOptions = {}): Promise<PipelineR
       timings,
     };
   } catch (err) {
+    if (err instanceof LlmAuthenticationError) {
+      return { ok: false, skipped: 'LLM authentication failed; check the configured LLM API key', timings };
+    }
+    const message = err instanceof Error ? err.message : String(err);
     return {
       ok: false,
-      error: err instanceof Error ? err.message : String(err),
+      error: message,
       timings,
     };
   }
@@ -209,6 +213,10 @@ export async function generateForTopic(
 
     return { ok: true, slug: post.slug, path, winner: { title, url: '', score: 1 }, timings };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : String(err), timings };
+    if (err instanceof LlmAuthenticationError) {
+      return { ok: false, skipped: 'LLM authentication failed; check the configured LLM API key', timings };
+    }
+    const message = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: message, timings };
   }
 }
