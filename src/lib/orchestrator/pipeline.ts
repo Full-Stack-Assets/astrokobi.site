@@ -28,9 +28,19 @@ export interface PipelineOptions {
   topicLog?: TopicLog;
 }
 
+const LLM_AUTH_STATUS_PATTERN = /LLM API error (?:400|401|403):/i;
+const LLM_AUTH_MESSAGE_PATTERNS = [
+  /invalid auth key/i,
+  /invalid api key/i,
+  /api key not valid/i,
+  /unauthorized/i,
+  /forbidden/i,
+];
+
 function isLlmAuthenticationError(message: string): boolean {
-  return /LLM API error (?:400|401|403):[\s\S]*(?:invalid auth key|invalid api key|api key not valid|unauthorized|forbidden)/i.test(
-    message
+  return (
+    LLM_AUTH_STATUS_PATTERN.test(message) &&
+    LLM_AUTH_MESSAGE_PATTERNS.some((pattern) => pattern.test(message))
   );
 }
 
