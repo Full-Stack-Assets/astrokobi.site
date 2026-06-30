@@ -28,6 +28,12 @@ export interface PipelineOptions {
   topicLog?: TopicLog;
 }
 
+function isLlmAuthenticationError(message: string): boolean {
+  return /LLM API error (?:400|401|403):[\s\S]*(?:invalid auth key|invalid api key|api key not valid|unauthorized|forbidden)/i.test(
+    message
+  );
+}
+
 export async function runPipeline(opts: PipelineOptions = {}): Promise<PipelineResult & { mdx?: string }> {
   const timings: Record<string, number> = {};
   const t = (label: string) => {
@@ -128,9 +134,13 @@ export async function runPipeline(opts: PipelineOptions = {}): Promise<PipelineR
       timings,
     };
   } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (isLlmAuthenticationError(message)) {
+      return { ok: false, skipped: 'LLM authentication failed; check the configured LLM API key', timings };
+    }
     return {
       ok: false,
-      error: err instanceof Error ? err.message : String(err),
+      error: message,
       timings,
     };
   }
@@ -209,6 +219,10 @@ export async function generateForTopic(
 
     return { ok: true, slug: post.slug, path, winner: { title, url: '', score: 1 }, timings };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : String(err), timings };
+    const message = err instanceof Error ? err.message : String(err);
+    if (isLlmAuthenticationError(message)) {
+      return { ok: false, skipped: 'LLM authentication failed; check the configured LLM API key', timings };
+    }
+    return { ok: false, error: message, timings };
   }
 }

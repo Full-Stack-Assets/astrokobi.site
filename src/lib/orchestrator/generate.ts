@@ -163,7 +163,7 @@ HARD RULES:
 - Do not wrap the JSON in markdown code fences.`;
 
 export async function generate(bundle: ResearchBundle): Promise<GeneratedPost> {
-  const primaryKey = process.env[PRIMARY_LLM.apiKeyEnv];
+  const primaryKey = (process.env[PRIMARY_LLM.apiKeyEnv] ?? '').trim();
   if (!primaryKey) throw new Error(`${PRIMARY_LLM.apiKeyEnv} not set`);
   const fallbackKey = FALLBACK_LLM ? (process.env[FALLBACK_LLM.apiKeyEnv] ?? '').trim() : '';
 
