@@ -33,7 +33,32 @@ class LlmError extends Error {
   }
 }
 
+export class LlmAuthenticationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'LlmAuthenticationError';
+  }
+}
+
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const LLM_AUTH_STATUSES = new Set([400, 401, 403]);
+const LLM_AUTH_MESSAGE_PATTERNS = [
+  /invalid auth key/i,
+  /invalid api key/i,
+  /api key not valid/i,
+  /unauthorized/i,
+  /forbidden/i,
+];
+
+function isLlmAuthenticationError(err: unknown): boolean {
+  return (
+    err instanceof LlmError &&
+    err.status !== undefined &&
+    LLM_AUTH_STATUSES.has(err.status) &&
+    LLM_AUTH_MESSAGE_PATTERNS.some((pattern) => pattern.test(err.message))
+  );
+}
 
 /** Worth another try? Only an LlmError is — a retryable HTTP status, or a
  *  network/bad-response failure (an LlmError with no status). Anything that is
@@ -195,6 +220,9 @@ export async function generate(bundle: ResearchBundle): Promise<GeneratedPost> {
       // of burning the remaining attempts and reporting a misleading "after N
       // attempts". Transient 429/5xx and network blips fall through to a backoff
       // so the next try lands after the demand spike rather than during it.
+      if (isLlmAuthenticationError(err)) {
+        throw new LlmAuthenticationError(lastError);
+      }
       if (!isTransient(err)) {
         throw new Error(`LLM generation aborted on a non-retryable error: ${lastError}`);
       }

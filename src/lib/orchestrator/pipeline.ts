@@ -5,7 +5,7 @@ import { fetchBraveNews } from '../sources/bravenews';
 import { fetchGoogleTrends } from '../sources/googletrends';
 import { score, dedupe, pickWinner, signature } from './score';
 import { research } from './research';
-import { generate } from './generate';
+import { generate, LlmAuthenticationError } from './generate';
 import { pickImage } from './image';
 import { serialize } from './serialize';
 import { loadTopicLog, saveTopicLog, commitPost } from './github';
@@ -26,22 +26,6 @@ export interface PipelineOptions {
   dryRun?: boolean;
   /** Override the topic log (useful for local runs). */
   topicLog?: TopicLog;
-}
-
-const LLM_AUTH_STATUS_PATTERN = /LLM API error (?:400|401|403):/i;
-const LLM_AUTH_MESSAGE_PATTERNS = [
-  /invalid auth key/i,
-  /invalid api key/i,
-  /api key not valid/i,
-  /unauthorized/i,
-  /forbidden/i,
-];
-
-function isLlmAuthenticationError(message: string): boolean {
-  return (
-    LLM_AUTH_STATUS_PATTERN.test(message) &&
-    LLM_AUTH_MESSAGE_PATTERNS.some((pattern) => pattern.test(message))
-  );
 }
 
 export async function runPipeline(opts: PipelineOptions = {}): Promise<PipelineResult & { mdx?: string }> {
@@ -145,7 +129,7 @@ export async function runPipeline(opts: PipelineOptions = {}): Promise<PipelineR
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    if (isLlmAuthenticationError(message)) {
+    if (err instanceof LlmAuthenticationError) {
       return { ok: false, skipped: 'LLM authentication failed; check the configured LLM API key', timings };
     }
     return {
@@ -230,7 +214,7 @@ export async function generateForTopic(
     return { ok: true, slug: post.slug, path, winner: { title, url: '', score: 1 }, timings };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    if (isLlmAuthenticationError(message)) {
+    if (err instanceof LlmAuthenticationError) {
       return { ok: false, skipped: 'LLM authentication failed; check the configured LLM API key', timings };
     }
     return { ok: false, error: message, timings };
