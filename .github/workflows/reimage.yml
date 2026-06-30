@@ -3,6 +3,7 @@ name: Re-image Posts
 # Manually-triggered backfill that refreshes hero images for existing posts
 # using the pipeline's pickImage() (content-accurate query + provider chain).
 # Pexels is used when PEXELS_API_KEY is set; otherwise the keyless Openverse.
+# Also runs when `.github/reimage-trigger.json` is pushed to main.
 on:
   workflow_dispatch:
     inputs:
@@ -13,6 +14,10 @@ on:
         options:
           - all
           - missing
+  push:
+    branches: [main]
+    paths:
+      - '.github/reimage-trigger.json'
 
 permissions:
   contents: write
@@ -32,11 +37,20 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - name: Resolve reimage mode
+        id: reimage_mode
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            MODE=$(jq -r '.mode // "all"' .github/reimage-trigger.json)
+          else
+            MODE="${{ github.event.inputs.mode }}"
+          fi
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
       - name: Re-image posts
         env:
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
         run: |
-          if [ "${{ github.event.inputs.mode }}" = "missing" ]; then
+          if [ "${{ steps.reimage_mode.outputs.mode }}" = "missing" ]; then
             npx tsx scripts/reimage.ts --missing
           else
             npx tsx scripts/reimage.ts
