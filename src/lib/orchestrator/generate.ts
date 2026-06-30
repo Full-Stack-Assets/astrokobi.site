@@ -52,6 +52,8 @@ const LLM_AUTH_MESSAGE_PATTERNS = [
 ];
 
 function isLlmAuthenticationError(err: unknown): boolean {
+  // Require both an auth-like HTTP status and provider auth wording so ordinary
+  // 400 validation errors still fail loudly instead of being treated as skips.
   return (
     err instanceof LlmError &&
     err.status !== undefined &&
@@ -198,7 +200,7 @@ export async function generate(bundle: ResearchBundle): Promise<GeneratedPost> {
   let failedOver = false;
 
   const baseUserPrompt = buildUserPrompt(bundle);
-  let lastError = '';
+  let lastErrorMessage = '';
 
   // PostSchema heals the clampable overshoots on its own. Retry only covers the
   // genuinely unrepairable misses (too-short body, too-few tags, malformed JSON)
@@ -208,28 +210,28 @@ export async function generate(bundle: ResearchBundle): Promise<GeneratedPost> {
     const userPrompt =
       attempt === 1
         ? baseUserPrompt
-        : `${baseUserPrompt}\n\nYour previous response was rejected: ${lastError}\nReturn a corrected JSON object that satisfies every constraint exactly.`;
+        : `${baseUserPrompt}\n\nYour previous response was rejected: ${lastErrorMessage}\nReturn a corrected JSON object that satisfies every constraint exactly.`;
 
     let content: string;
     try {
       content = await callLlm(provider, providerKey, userPrompt);
     } catch (err) {
-      lastError = err instanceof Error ? err.message : String(err);
+      lastErrorMessage = err instanceof Error ? err.message : String(err);
       // A non-retryable client error (400/401/403) or an unexpected bug fails
       // identically every time — surface it now with an accurate message instead
       // of burning the remaining attempts and reporting a misleading "after N
       // attempts". Transient 429/5xx and network blips fall through to a backoff
       // so the next try lands after the demand spike rather than during it.
       if (isLlmAuthenticationError(err)) {
-        throw new LlmAuthenticationError(lastError);
+        throw new LlmAuthenticationError(lastErrorMessage);
       }
       if (!isTransient(err)) {
-        throw new Error(`LLM generation aborted on a non-retryable error: ${lastError}`);
+        throw new Error(`LLM generation aborted on a non-retryable error: ${lastErrorMessage}`);
       }
       if (attempt < MAX_GENERATION_ATTEMPTS) {
         const wait = backoffMs(attempt);
         console.warn(
-          `[generate] attempt ${attempt}/${MAX_GENERATION_ATTEMPTS} failed: ${lastError.slice(0, 140)} — retrying in ${wait}ms`
+          `[generate] attempt ${attempt}/${MAX_GENERATION_ATTEMPTS} failed: ${lastErrorMessage.slice(0, 140)} — retrying in ${wait}ms`
         );
         await sleep(wait);
       }
@@ -240,7 +242,7 @@ export async function generate(bundle: ResearchBundle): Promise<GeneratedPost> {
     try {
       parsed = JSON.parse(content);
     } catch {
-      lastError = 'response was not valid JSON';
+      lastErrorMessage = 'response was not valid JSON';
       continue;
     }
 
@@ -251,18 +253,18 @@ export async function generate(bundle: ResearchBundle): Promise<GeneratedPost> {
       // crashes `next build` during MDX prerender. Reject and regenerate.
       const unbalanced = findUnbalancedMdxTag(result.data.body);
       if (unbalanced) {
-        lastError = `body has an unbalanced MDX tag: ${unbalanced} (likely a truncated response)`;
+        lastErrorMessage = `body has an unbalanced MDX tag: ${unbalanced} (likely a truncated response)`;
         continue;
       }
       return finalize(result.data, bundle);
     }
-    lastError = result.error.issues
+    lastErrorMessage = result.error.issues
       .map((i) => `${i.path.join('.') || 'root'} — ${i.message}`)
       .join('; ');
   }
 
   throw new Error(
-    `LLM generation failed after ${MAX_GENERATION_ATTEMPTS} attempts: ${lastError}`
+    `LLM generation failed after ${MAX_GENERATION_ATTEMPTS} attempts: ${lastErrorMessage}`
   );
 }
 
