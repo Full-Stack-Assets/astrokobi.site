@@ -74,6 +74,22 @@ Fill them into `.env.local` along with `GITHUB_OWNER` / `GITHUB_REPO` / `GITHUB_
 
 > **⚠️ Security note:** Never commit `.env.local` or any file containing real API keys. `.env.local` is already in `.gitignore`. Use `.env.example` as a template with placeholder values only. See [`SECURITY_REMEDIATION.md`](SECURITY_REMEDIATION.md).
 
+### Monetization (optional, owner-supplied)
+
+All monetization is config-gated — leave a value blank and the surface renders
+nothing (no broken placeholders):
+
+| Value | Where to set it | What it unlocks |
+|---|---|---|
+| `NEXT_PUBLIC_ADSENSE_CLIENT` (or `adsenseClient` in `src/site.config.ts`) | AdSense → Account → your `ca-pub-…` id | Loads the AdSense script, serves a valid `/ads.txt`, emits the site-verification meta tag |
+| `NEXT_PUBLIC_ADSENSE_SLOT_IN_ARTICLE` / `_FOOTER` / `_LISTING` | AdSense → Ads → By ad unit | Manual units: after each article body, site-wide footer, and homepage listing |
+| `NEXT_PUBLIC_AMAZON_AFFILIATE_TAG` (or `affiliate.amazonTag` in `src/site.config.ts`) | Amazon Associates → your tracking id (e.g. `astrokobi-20`) | Tags `<GearBox>`/`<GearPick>` links; untagged they stay plain outbound links |
+| `BUTTONDOWN_API_KEY` | Buttondown → Settings → API | Newsletter signup form + weekly digest |
+
+Never invent a tag or publisher id — these are account-specific values only the
+site owner can supply. The affiliate disclosure (footer/About) is controlled by
+`affiliate.disclose` in `src/site.config.ts`.
+
 ### 4. Test locally
 
 ```bash

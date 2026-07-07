@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { listPosts } from '@/lib/posts';
 import { SignalVisual } from '@/components/SignalVisual';
+import { AdSlot } from '@/components/AdSlot';
+import { ADSENSE_SLOT_LISTING } from '@/lib/ads';
 import { siteConfig } from '@/site.config';
 
 export const revalidate = 300;
@@ -15,6 +17,9 @@ export default async function HomePage() {
       {posts.length === 0 ? <EmptyState /> : (
         <>
           {lead && <LeadStory post={lead} />}
+          {/* Listing ad between the lead story and the grid — renders only when
+              AdSense + the listing slot id are configured. */}
+          <AdSlot slot={ADSENSE_SLOT_LISTING} format="auto" className="mt-12 block" />
           {rest.length > 0 && (
             <section className="mt-24">
               <SectionRule label="The field notes" />
