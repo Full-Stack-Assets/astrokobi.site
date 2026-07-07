@@ -213,6 +213,18 @@ export async function generate(
   let providerKey = primaryKey;
   let failedOver = false;
 
+  /** Switch to the backup provider (once), if one is configured and keyed. */
+  const failOver = (reason: string): boolean => {
+    if (failedOver || !FALLBACK_LLM || !fallbackKey) return false;
+    console.warn(
+      `[generate] failing over from ${provider.model} to ${FALLBACK_LLM.model}: ${reason.slice(0, 140)}`
+    );
+    provider = FALLBACK_LLM;
+    providerKey = fallbackKey;
+    failedOver = true;
+    return true;
+  };
+
   const baseUserPrompt = buildUserPrompt(bundle, opts.targetWords);
   const schema = opts.minBodyChars
     ? PostSchema.extend({ body: z.string().min(opts.minBodyChars) })
@@ -240,10 +252,20 @@ export async function generate(
       // attempts". Transient 429/5xx and network blips fall through to a backoff
       // so the next try lands after the demand spike rather than during it.
       if (isLlmAuthenticationError(err)) {
+        // A bad/revoked key on the primary shouldn't kill the run when a keyed
+        // backup exists — the backup can still write the post. Only skip (via
+        // the typed error) when no working provider remains.
+        if (failOver(lastErrorMessage)) continue;
         throw new LlmAuthenticationError(lastErrorMessage);
       }
       if (!isTransient(err)) {
         throw new Error(`LLM generation aborted on a non-retryable error: ${lastErrorMessage}`);
+      }
+      // Availability errors (429 rate limit, 5xx "overloaded") get one retry on
+      // the current provider; if it's still struggling, switch to the backup
+      // rather than burning every remaining attempt on a saturated model.
+      if (attempt >= 2 && isAvailabilityError(lastErrorMessage) && failOver(lastErrorMessage)) {
+        continue;
       }
       if (attempt < MAX_GENERATION_ATTEMPTS) {
         const wait = backoffMs(attempt);
