@@ -45,7 +45,7 @@ export default async function StatsPage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-16">
       {/* Header */}
-      <div className="mb-12 border-b-2 border-ink pb-6">
+      <div className="mb-12 border-b-2 border-rule/40 pb-6">
         <div className="text-xs uppercase tracking-[0.3em] text-muted">Meta</div>
         <h1 className="mt-2 font-display text-5xl font-black">Stats</h1>
         <p className="mt-2 text-muted">
@@ -77,12 +77,12 @@ export default async function StatsPage() {
                   >
                     {cat}
                   </Link>
-                  <div className="flex-1 h-6 bg-ink/5 relative overflow-hidden">
+                  <div className="flex-1 h-6 bg-rule/5 relative overflow-hidden">
                     <div
                       className="absolute inset-y-0 left-0 bg-accent/80"
                       style={{ width: `${pct}%`, minWidth: '1rem' }}
                     />
-                    <span className="absolute inset-y-0 right-2 flex items-center text-[11px] font-mono text-ink/60">
+                    <span className="absolute inset-y-0 right-2 flex items-center text-[11px] font-mono text-muted">
                       {n} ({pct}%)
                     </span>
                   </div>
@@ -101,7 +101,7 @@ export default async function StatsPage() {
               <Link
                 key={tag}
                 href={`/tags/${tag}`}
-                className="border border-ink/25 px-3 py-1.5 text-xs uppercase tracking-widest hover:border-accent hover:text-accent transition-colors"
+                className="border border-rule/25 px-3 py-1.5 text-xs uppercase tracking-widest hover:border-accent hover:text-accent transition-colors"
               >
                 #{tag}{' '}
                 <span className="font-mono text-muted">{n}</span>
@@ -117,13 +117,13 @@ export default async function StatsPage() {
         {log.topics.length === 0 ? (
           <p className="mt-4 text-muted">
             No topics logged yet. Run{' '}
-            <code className="rounded bg-ink/10 px-2 py-0.5 text-sm">
+            <code className="rounded bg-rule/10 px-2 py-0.5 text-sm">
               npm run generate
             </code>{' '}
             to populate.
           </p>
         ) : (
-          <div className="mt-6 divide-y divide-ink/10">
+          <div className="mt-6 divide-y divide-rule/10">
             {log.topics
               .slice(-25)
               .reverse()
@@ -158,7 +158,7 @@ export default async function StatsPage() {
       </section>
 
       {/* Back link */}
-      <div className="mt-16 border-t border-ink/20 pt-8">
+      <div className="mt-16 border-t border-rule/20 pt-8">
         <Link
           href="/"
           className="inline-flex items-center gap-2 font-display font-semibold text-accent hover:gap-3 transition-all"
@@ -172,7 +172,7 @@ export default async function StatsPage() {
 
 function Stat({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="border border-ink/20 p-5">
+    <div className="border border-rule/20 p-5">
       <div className="font-display text-3xl font-black text-accent">{value}</div>
       <div className="mt-1 text-[10px] uppercase tracking-[0.2em] text-muted">
         {label}
@@ -185,7 +185,7 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-4">
       <h2 className="font-display text-xl font-bold shrink-0">{children}</h2>
-      <div className="h-px flex-1 bg-ink/20" />
+      <div className="h-px flex-1 bg-rule/20" />
     </div>
   );
 }

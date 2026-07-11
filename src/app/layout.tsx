@@ -75,7 +75,7 @@ function Header() {
   const words = siteConfig.name.split(' ');
   const last = words.pop();
   return (
-    <header className="relative z-20 border-b border-white/15">
+    <header className="site-header z-30 border-b border-rule/15">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
         <Link href="/" className="group">
           <div className="font-display text-xl font-semibold uppercase tracking-[0.12em] leading-none text-paper">{words.join(' ')} <span className="text-accent">{last}</span></div>
@@ -85,7 +85,7 @@ function Header() {
             <Link key={c} href={`/categories/${c}`} className="hidden transition-colors hover:text-accent sm:block">{navLabel(c)}</Link>
           ))}
           <Link href="/about" className="transition-colors hover:text-accent">About</Link>
-          <a href="/feed.xml" className="border border-white/20 px-3 py-2 text-paper transition-colors hover:border-accent hover:text-accent">RSS ↗</a>
+          <a href="/feed.xml" className="border border-rule/20 px-3 py-2 text-paper transition-colors hover:border-accent hover:text-accent">RSS ↗</a>
         </nav>
       </div>
     </header>
@@ -94,10 +94,10 @@ function Header() {
 
 function Footer() {
   return (
-    <footer className="relative z-10 mt-32 border-t border-white/15">
+    <footer className="relative z-10 mt-32 border-t border-rule/15">
       <div className="mx-auto max-w-7xl px-5 py-12 text-sm text-muted sm:px-8">
         <AdSlot slot={ADSENSE_SLOT_FOOTER} format="auto" className="mb-8 block" />
-        <div className="mb-10 flex flex-col gap-5 border-b border-white/10 pb-10 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-10 flex flex-col gap-5 border-b border-rule/10 pb-10 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-md">
             <div className="eyebrow text-accent">The weekly transmission</div>
             <p className="mt-3 max-w-md font-display text-2xl leading-tight text-paper">One sharp idea from beyond the known. No feed-filler.</p>
@@ -128,7 +128,7 @@ function Footer() {
           corrections are welcome.
         </p>
         {shouldDisclose() && (
-          <div className="mt-4 max-w-3xl border-t border-ink/10 pt-4">
+          <div className="mt-4 max-w-3xl border-t border-rule/10 pt-4">
             <AffiliateDisclosure scope="site" />
           </div>
         )}

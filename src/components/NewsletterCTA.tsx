@@ -16,8 +16,8 @@ export function NewsletterCTA({
 }) {
   return (
     <aside className="my-12 border border-accent/40 bg-accent/[0.04] p-6 sm:p-8">
-      <div className="font-display text-xl font-bold leading-snug text-ink">{heading}</div>
-      <p className="mt-1 mb-4 text-sm text-ink/70">{blurb}</p>
+      <div className="font-display text-xl font-bold leading-snug text-paper">{heading}</div>
+      <p className="mt-1 mb-4 text-sm text-muted">{blurb}</p>
       <SubscribeForm />
     </aside>
   );
