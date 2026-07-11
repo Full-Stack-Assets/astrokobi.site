@@ -98,7 +98,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           <span>·</span>
           <span>{readingTimeMin} min read</span>
         </div>
-        <h1 className="font-display text-5xl font-semibold leading-[1.02] tracking-[-0.03em] sm:text-6xl md:text-7xl">
+        <h1 className="gradient-text font-display text-5xl font-semibold leading-[1.02] tracking-[-0.03em] sm:text-6xl md:text-7xl">
           {frontmatter.title}
         </h1>
         <p className="mt-7 text-lg leading-relaxed text-muted sm:text-xl">

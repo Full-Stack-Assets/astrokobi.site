@@ -2,16 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Manrope:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&family=Zilla+Slab:wght@500;600;700&display=swap');
-
 /* ── Theme tokens ──────────────────────────────────────────────────────────
+   Fonts are self-hosted via next/font/google in src/app/layout.tsx, which
+   sets --font-gf-display / --font-gf-body / --font-gf-mono on <html>
+   (Zilla Slab / Public Sans / JetBrains Mono) — no render-blocking @import.
    Color channels are RGB triples so Tailwind opacity modifiers work
    (`text-accent/60` → rgb(var(--color-accent) / .6)). Each site variant
    overrides the palette + display face via its [data-site] attribute. */
 :root {
-  --font-display: 'Space Grotesk', system-ui, sans-serif;
-  --font-body: 'Manrope', system-ui, sans-serif;
-  --font-mono: 'DM Mono', ui-monospace, monospace;
+  --font-display: var(--font-gf-display, Georgia), 'Iowan Old Style', Georgia, serif;
+  --font-body: var(--font-gf-body, system-ui), system-ui, sans-serif;
+  --font-mono: var(--font-gf-mono, ui-monospace), ui-monospace, 'SF Mono', monospace;
   --color-ink: 7 9 14;          /* page background */
   --color-surface: 10 13 21;    /* raised panels */
   --color-paper: 238 241 248;   /* primary text */
@@ -20,6 +21,7 @@
   --color-accent: 157 255 229;
   --color-accent-two: 127 140 255;
   --color-rule: 255 255 255;    /* hairline borders (used at low alpha) */
+  --color-copper: 127 140 255;  /* gradient tail; overridden per variant */
 }
 [data-site='astrokobi-online'] {
   --color-accent: 255 155 122;
@@ -28,7 +30,6 @@
 /* AstroKobi Site — “field manual” edition: warm charcoal ink, amber/gold
    accents, slab-serif headlines, blueprint graph-paper texture. */
 [data-site='astrokobi-site'] {
-  --font-display: 'Zilla Slab', 'Iowan Old Style', Georgia, serif;
   --color-ink: 23 20 16;
   --color-surface: 30 26 21;
   --color-paper: 241 234 222;
@@ -37,6 +38,7 @@
   --color-accent: 232 168 61;
   --color-accent-two: 244 208 128;
   --color-rule: 244 208 128;
+  --color-copper: 197 108 58; /* deep copper for gradient headline tails */
 }
 
 html {
@@ -76,8 +78,31 @@ body::before {
   -webkit-mask-image: radial-gradient(ellipse at 50% 0%, black 30%, rgb(0 0 0 / .35) 100%);
   mask-image: radial-gradient(ellipse at 50% 0%, black 30%, rgb(0 0 0 / .35) 100%);
 }
+/* Field-manual variant: warmer, layered draft-table backdrop — a glowing
+   pool of lamplight over the hero, a copper underglow low on the page, and
+   a soft vignette pinning the corners. Pure CSS, zero motion. */
+[data-site='astrokobi-site'] body {
+  background:
+    radial-gradient(ellipse 62rem 34rem at 50% -6rem, rgb(var(--color-accent) / .16), transparent 70%),
+    radial-gradient(ellipse 40rem 22rem at 18% 4rem, rgb(var(--color-accent-two) / .07), transparent 70%),
+    radial-gradient(ellipse 46rem 30rem at 85% 105%, rgb(var(--color-copper) / .10), transparent 72%),
+    linear-gradient(180deg, rgb(30 25 18), rgb(var(--color-ink)) 28rem),
+    rgb(var(--color-ink));
+}
+[data-site='astrokobi-site'] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 40%, transparent 55%, rgb(10 8 5 / .55) 100%);
+}
 
 ::selection { background: rgb(var(--color-accent)); color: rgb(var(--color-ink)); }
+[data-site='astrokobi-site'] ::selection {
+  background: rgb(var(--color-accent-two)); /* gold highlighter pull */
+  color: rgb(var(--color-ink));
+}
 
 .font-display { font-family: var(--font-display); }
 .eyebrow {
@@ -93,6 +118,18 @@ body::before {
   background-clip: text;
   -webkit-background-clip: text;
 }
+/* Field-manual headlines: parchment → amber → gold → copper burn-off. */
+[data-site='astrokobi-site'] .gradient-text {
+  background: linear-gradient(
+    100deg,
+    rgb(var(--color-paper)) 8%,
+    rgb(var(--color-accent-two)) 42%,
+    rgb(var(--color-accent)) 68%,
+    rgb(var(--color-copper)) 96%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+}
 
 /* Sticky site header — translucent ink + backdrop blur. */
 .site-header {
@@ -103,19 +140,48 @@ body::before {
   -webkit-backdrop-filter: blur(14px) saturate(1.15);
 }
 
-/* Tactile card hover: fine border, gentle lift, warm glow. */
+/* Tactile card hover: fine border, gentle lift, warm glow, and a diagonal
+   lacquer sheen that sweeps in — like tilting a varnished field card
+   under the draft-table lamp. */
 .card-lift {
+  position: relative;
+  overflow: hidden;
   transition: transform .3s ease, box-shadow .3s ease, background-color .3s ease, border-color .3s ease;
+}
+.card-lift::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgb(var(--color-accent-two) / .07) 45%,
+    rgb(var(--color-rule) / .12) 50%,
+    rgb(var(--color-accent-two) / .07) 55%,
+    transparent 70%
+  );
+  background-size: 250% 250%;
+  background-position: 120% 120%;
+  transition: opacity .35s ease, background-position .6s ease;
 }
 .card-lift:hover {
   transform: translateY(-3px);
   background-color: rgb(var(--color-surface) / .65);
   box-shadow:
     0 18px 42px -22px rgb(0 0 0 / .7),
+    0 0 0 1px rgb(var(--color-accent) / .14),
+    0 8px 30px -18px rgb(var(--color-accent) / .35),
     inset 0 1px 0 rgb(var(--color-rule) / .12);
+}
+.card-lift:hover::after {
+  opacity: 1;
+  background-position: 0% 0%;
 }
 @media (prefers-reduced-motion: reduce) {
   .card-lift, .card-lift:hover { transform: none; }
+  .card-lift::after { transition: opacity .35s ease; background-position: 50% 50%; }
 }
 
 .signal-visual {

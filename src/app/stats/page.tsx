@@ -47,7 +47,7 @@ export default async function StatsPage() {
       {/* Header */}
       <div className="mb-12 border-b-2 border-rule/40 pb-6">
         <div className="text-xs uppercase tracking-[0.3em] text-muted">Meta</div>
-        <h1 className="mt-2 font-display text-5xl font-black">Stats</h1>
+        <h1 className="gradient-text mt-2 font-display text-5xl font-black">Stats</h1>
         <p className="mt-2 text-muted">
           Pipeline telemetry and content breakdown.
         </p>
@@ -79,7 +79,7 @@ export default async function StatsPage() {
                   </Link>
                   <div className="flex-1 h-6 bg-rule/5 relative overflow-hidden">
                     <div
-                      className="absolute inset-y-0 left-0 bg-accent/80"
+                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent-two via-accent to-copper"
                       style={{ width: `${pct}%`, minWidth: '1rem' }}
                     />
                     <span className="absolute inset-y-0 right-2 flex items-center text-[11px] font-mono text-muted">
@@ -172,8 +172,8 @@ export default async function StatsPage() {
 
 function Stat({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="border border-rule/20 p-5">
-      <div className="font-display text-3xl font-black text-accent">{value}</div>
+    <div className="card-lift border border-rule/20 p-5">
+      <div className="gradient-text font-display text-3xl font-black">{value}</div>
       <div className="mt-1 text-[10px] uppercase tracking-[0.2em] text-muted">
         {label}
       </div>

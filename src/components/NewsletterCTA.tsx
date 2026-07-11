@@ -15,7 +15,7 @@ export function NewsletterCTA({
   blurb?: string;
 }) {
   return (
-    <aside className="my-12 border border-accent/40 bg-accent/[0.04] p-6 sm:p-8">
+    <aside className="my-12 border border-accent/40 bg-gradient-to-br from-accent/[0.08] via-transparent to-copper/[0.06] p-6 sm:p-8">
       <div className="font-display text-xl font-bold leading-snug text-paper">{heading}</div>
       <p className="mt-1 mb-4 text-sm text-muted">{blurb}</p>
       <SubscribeForm />

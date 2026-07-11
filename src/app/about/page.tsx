@@ -7,7 +7,7 @@ export default function AboutPage() {
   return (
     <div className="mx-auto max-w-4xl px-5 py-20 sm:px-8 sm:py-28">
       <div className="eyebrow text-accent">About the journal</div>
-      <h1 className="mt-6 max-w-3xl font-display text-5xl font-medium leading-[.92] tracking-[-.05em] sm:text-7xl">
+      <h1 className="gradient-text mt-6 max-w-3xl font-display text-5xl font-medium leading-[.92] tracking-[-.05em] sm:text-7xl">
         Curiosity needs a longer horizon.
       </h1>
       <div className="mt-16 grid gap-12 border-t border-rule/15 pt-10 md:grid-cols-[1fr_2fr]">

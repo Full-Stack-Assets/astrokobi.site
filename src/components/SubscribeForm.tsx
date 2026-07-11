@@ -60,7 +60,7 @@ export function SubscribeForm() {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
           aria-label="Email address"
-          className="min-w-0 flex-1 border border-rule/25 bg-surface px-3 py-2 text-sm text-paper placeholder:text-muted focus:border-accent focus:outline-none"
+          className="min-w-0 flex-1 border border-rule/25 bg-surface px-3 py-2 text-sm text-paper transition-shadow placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25"
         />
         <button
           type="submit"

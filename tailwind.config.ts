@@ -21,6 +21,7 @@ const config: Config = {
         prose: 'rgb(var(--color-prose) / <alpha-value>)',
         accent: 'rgb(var(--color-accent) / <alpha-value>)',
         'accent-two': 'rgb(var(--color-accent-two) / <alpha-value>)',
+        copper: 'rgb(var(--color-copper) / <alpha-value>)',
         muted: 'rgb(var(--color-muted) / <alpha-value>)',
         rule: 'rgb(var(--color-rule) / <alpha-value>)',
         // Intermediate zinc shade used by the VaporLoop demo (/vaporloop)

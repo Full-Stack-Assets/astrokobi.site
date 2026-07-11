@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Zilla_Slab, Public_Sans, JetBrains_Mono } from 'next/font/google';
 import Link from 'next/link';
 import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/next';
@@ -11,6 +12,27 @@ import { ADSENSE_CLIENT, ADSENSE_SLOT_FOOTER } from '@/lib/ads';
 import { siteConfig } from '@/site.config';
 import { shouldDisclose } from '@/lib/affiliate';
 import './globals.css';
+
+/* Self-hosted at build time via next/font — no render-blocking @import.
+   Exposed as CSS variables consumed by the theme tokens in globals.css. */
+const fontDisplay = Zilla_Slab({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  variable: '--font-gf-display',
+  display: 'swap',
+});
+const fontBody = Public_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-gf-body',
+  display: 'swap',
+});
+const fontMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-gf-mono',
+  display: 'swap',
+});
 
 /** Short categories (AI, DIY) read better uppercased; longer ones title-cased. */
 function navLabel(c: string): string {
@@ -47,7 +69,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-site={siteConfig.key}>
+    <html
+      lang="en"
+      data-site={siteConfig.key}
+      className={`${fontDisplay.variable} ${fontBody.variable} ${fontMono.variable}`}
+    >
       <body className="relative overflow-x-hidden">
         {ADSENSE_CLIENT && (
           <Script

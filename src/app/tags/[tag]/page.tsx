@@ -19,7 +19,7 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
     <div className="mx-auto max-w-4xl px-6 py-16">
       <div className="mb-12 border-b-2 border-rule/40 pb-6">
         <div className="text-xs uppercase tracking-[0.3em] text-muted">Tag</div>
-        <h1 className="mt-2 font-display text-5xl font-black">#{tag}</h1>
+        <h1 className="gradient-text mt-2 font-display text-5xl font-black">#{tag}</h1>
         <p className="mt-2 text-muted">{posts.length} {posts.length === 1 ? 'post' : 'posts'}</p>
       </div>
       <ul className="divide-y divide-rule/20">
