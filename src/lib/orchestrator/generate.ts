@@ -228,6 +228,18 @@ export async function generate(bundle: ResearchBundle): Promise<GeneratedPost> {
       if (!isTransient(err)) {
         throw new Error(`LLM generation aborted on a non-retryable error: ${lastErrorMessage}`);
       }
+      // Availability trouble on the primary (429/5xx/overloaded): switch to the
+      // backup provider for the remaining attempts instead of hammering a model
+      // that is telling us it's down.
+      if (!failedOver && FALLBACK_LLM && fallbackKey && isAvailabilityError(lastErrorMessage)) {
+        failedOver = true;
+        provider = FALLBACK_LLM;
+        providerKey = fallbackKey;
+        console.warn(
+          `[generate] ${PRIMARY_LLM.model} unavailable (${lastErrorMessage.slice(0, 140)}) — failing over to ${FALLBACK_LLM.model}`
+        );
+        continue;
+      }
       if (attempt < MAX_GENERATION_ATTEMPTS) {
         const wait = backoffMs(attempt);
         console.warn(
