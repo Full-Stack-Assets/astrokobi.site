@@ -13,11 +13,17 @@ const config: Config = {
         mono: ['var(--font-mono)', 'monospace'],
       },
       colors: {
-        ink: '#07090e',
-        paper: 'var(--color-paper)',
-        accent: 'var(--color-accent)',
-        muted: 'var(--color-muted)',
-        rule: '#272c38',
+        // RGB-triple CSS vars (set per site variant in globals.css) so
+        // Tailwind opacity modifiers (`text-accent/60`) keep working.
+        ink: 'rgb(var(--color-ink) / <alpha-value>)',
+        surface: 'rgb(var(--color-surface) / <alpha-value>)',
+        paper: 'rgb(var(--color-paper) / <alpha-value>)',
+        prose: 'rgb(var(--color-prose) / <alpha-value>)',
+        accent: 'rgb(var(--color-accent) / <alpha-value>)',
+        'accent-two': 'rgb(var(--color-accent-two) / <alpha-value>)',
+        copper: 'rgb(var(--color-copper) / <alpha-value>)',
+        muted: 'rgb(var(--color-muted) / <alpha-value>)',
+        rule: 'rgb(var(--color-rule) / <alpha-value>)',
         // Intermediate zinc shade used by the VaporLoop demo (/vaporloop)
         'zinc-850': '#1f1f23',
       },

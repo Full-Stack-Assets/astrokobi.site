@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Zilla_Slab, Public_Sans, JetBrains_Mono } from 'next/font/google';
 import Link from 'next/link';
 import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/next';
@@ -11,6 +12,27 @@ import { ADSENSE_CLIENT, ADSENSE_SLOT_FOOTER } from '@/lib/ads';
 import { siteConfig } from '@/site.config';
 import { shouldDisclose } from '@/lib/affiliate';
 import './globals.css';
+
+/* Self-hosted at build time via next/font — no render-blocking @import.
+   Exposed as CSS variables consumed by the theme tokens in globals.css. */
+const fontDisplay = Zilla_Slab({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  variable: '--font-gf-display',
+  display: 'swap',
+});
+const fontBody = Public_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-gf-body',
+  display: 'swap',
+});
+const fontMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-gf-mono',
+  display: 'swap',
+});
 
 /** Short categories (AI, DIY) read better uppercased; longer ones title-cased. */
 function navLabel(c: string): string {
@@ -47,7 +69,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-site={siteConfig.key}>
+    <html
+      lang="en"
+      data-site={siteConfig.key}
+      className={`${fontDisplay.variable} ${fontBody.variable} ${fontMono.variable}`}
+    >
       <body className="relative overflow-x-hidden">
         {ADSENSE_CLIENT && (
           <Script
@@ -75,7 +101,7 @@ function Header() {
   const words = siteConfig.name.split(' ');
   const last = words.pop();
   return (
-    <header className="relative z-20 border-b border-white/15">
+    <header className="site-header z-30 border-b border-rule/15">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
         <Link href="/" className="group">
           <div className="font-display text-xl font-semibold uppercase tracking-[0.12em] leading-none text-paper">{words.join(' ')} <span className="text-accent">{last}</span></div>
@@ -85,7 +111,7 @@ function Header() {
             <Link key={c} href={`/categories/${c}`} className="hidden transition-colors hover:text-accent sm:block">{navLabel(c)}</Link>
           ))}
           <Link href="/about" className="transition-colors hover:text-accent">About</Link>
-          <a href="/feed.xml" className="border border-white/20 px-3 py-2 text-paper transition-colors hover:border-accent hover:text-accent">RSS ↗</a>
+          <a href="/feed.xml" className="border border-rule/20 px-3 py-2 text-paper transition-colors hover:border-accent hover:text-accent">RSS ↗</a>
         </nav>
       </div>
     </header>
@@ -94,10 +120,10 @@ function Header() {
 
 function Footer() {
   return (
-    <footer className="relative z-10 mt-32 border-t border-white/15">
+    <footer className="relative z-10 mt-32 border-t border-rule/15">
       <div className="mx-auto max-w-7xl px-5 py-12 text-sm text-muted sm:px-8">
         <AdSlot slot={ADSENSE_SLOT_FOOTER} format="auto" className="mb-8 block" />
-        <div className="mb-10 flex flex-col gap-5 border-b border-white/10 pb-10 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-10 flex flex-col gap-5 border-b border-rule/10 pb-10 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-md">
             <div className="eyebrow text-accent">The weekly transmission</div>
             <p className="mt-3 max-w-md font-display text-2xl leading-tight text-paper">One sharp idea from beyond the known. No feed-filler.</p>
@@ -128,7 +154,7 @@ function Footer() {
           corrections are welcome.
         </p>
         {shouldDisclose() && (
-          <div className="mt-4 max-w-3xl border-t border-ink/10 pt-4">
+          <div className="mt-4 max-w-3xl border-t border-rule/10 pt-4">
             <AffiliateDisclosure scope="site" />
           </div>
         )}
