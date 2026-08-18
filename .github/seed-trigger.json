@@ -3,5 +3,5 @@
   "interval_hours": 24,
   "purge": false,
   "requestedAt": "2026-06-30T19:35:00Z",
-  "note": "Backfill ~30 evergreen space/astronomy posts for the Vercel site catalog"
+  "note": "Backfill ~30 evergreen space/astronomy posts for the site catalog"
 }
